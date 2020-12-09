@@ -64,7 +64,7 @@ loop = function(num, preamble = 25){
 }
 
 res = loop(num = input)
-index = which(res == FALSE)[1]+25
+index = which(!res)[1]+25
 input[index]
 # [1] 731031916
 
