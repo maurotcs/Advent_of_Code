@@ -125,7 +125,7 @@ find_target = function(ind, target, num){
 }
 
 res = parallel::mclapply(1:(length(input)-4), FUN = find_target,
-                         target = target, num = input[-index], 
+                         target = target, num = input, 
                          mc.cores = 3)
 found = res[which(sapply(res, length) > 1)[1]][[1]]
 found
