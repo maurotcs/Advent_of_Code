@@ -145,55 +145,17 @@ test[aumentou_uai(test)]
 
 #----
 #---- Let's get down to business!! The 'Bitch' function ----
-# A couple of auxiliary functions
-getB = function(x){ # solve item b
-  #       b) numero de dias entre o comeco do evento em y e o primeiro aumento em z.
-  aux = which(dat$aumentou[-c(1:x)])
-  out = ifelse(length(aux) == 0, NA, aux[1])
-  out
-}
-getC = function(){ # solve item c
-  #       c) numero de dias entre o MAIOR valor dentro dos eventos em y e o maior valor em z ANTES do proximo evento.
-  maior = sapply(sequences, which.max) + indexes$first - 1
-  out = numeric()
-  for(i in 1:length(maior)){
-    if(i < length(maior)){
-      final = ( indexes[i+1, 'first'] - 1 )
-    } else{ # do the same for the last row
-      # considers there'd an event happenning the day after the last sample
-      final = nrow(dat)
-    }
-    aux = dat$z[(maior[i]+1):final]
-    out[i] = which.max(aux) # considers ONLY the first entry with maximum value
-  }
-  
-  
-  return(out)
-}
-getD = function(){ # solve item d
-  #       d)diferenca entre o valore maximo em z depois do evento e a media de z nos 3 dias antes do evento
-  meanZ = apply(indexes, MARGIN = 1, FUN = function(vec){
-    if(vec[1] < 3){
-      return(NA) 
-    } else{
-      return(mean(dat$z[(vec[1]-3):(vec[1]-1)]) )
-    }
-  })
-  maxZ = sapply(indexes$last, FUN = function(x) which.max(dat$z[-c(1:x+1)]))
-  
-  out = ( maxZ - as.numeric(meanZ) )
-  return(out)
-}
+
 # So NOW we can make the MASTER function that'll output the desired data.frame
 Bitch = function(dat, # expects something EXACTLY like the example data.frame
                  nDays = 3, na.rm = FALSE, cutoff = 110 # for the 'aumentou_uai' function
-                 ){
+){
   # initialize the object with the output
   bitching = data.frame(event_begin = as.Date('1666-01-01'),
                         a = -999, b = -999, c = -999, d = -999)
   
-  # adds a boolean column to the input dataset, with 'z' values that pass the cutoff
-  dat$aumentou = aumentou_uai(dat$z, nDays = nDays, na.rm = na.rm, cutoff = cutoff)
+  # creates a boolean vector to the input dataset, with 'z' values that pass the cutoff
+  aumentou = aumentou_uai(dat$z, nDays = nDays, na.rm = na.rm, cutoff = cutoff)
   
   # finds all valid sequences
   aux = find_events(dat$y)
@@ -207,23 +169,59 @@ Bitch = function(dat, # expects something EXACTLY like the example data.frame
   # otherwise, we store the data on the events
   bitching[1:nrow(indexes), 'event_begin'] = dat[indexes$first, 'x']
   
-  
-#       a) soma dos valores do evento
+  #       a) soma dos valores do evento
   bitching[ , 'a'] = sapply(sequences, FUN = sum)
   
-#       b) numero de dias entre o comeco do evento em y e o primeiro aumento em z.
+  #       b) numero de dias entre o comeco do evento em y e o primeiro aumento em z.
+  getB = function(x){ # solve item b
+    #       b) numero de dias entre o comeco do evento em y e o primeiro aumento em z.
+    aux = which(aumentou[-c(1:x)])
+    out = ifelse(length(aumentou) == 0, NA, aux[1])
+    out
+  }
   bitching[ , 'b'] = sapply(indexes$first, FUN = getB)
-
-#       c) numero de dias entre o MAIOR valor dentro dos eventos em y e o maior valor em z ANTES do proximo evento.
+  
+  #       c) numero de dias entre o MAIOR valor dentro dos eventos em y e o maior valor em z ANTES do proximo evento.
+  getC = function(){ # solve item c
+    #       c) numero de dias entre o MAIOR valor dentro dos eventos em y e o maior valor em z ANTES do proximo evento.
+    maior = sapply(sequences, which.max) + indexes$first - 1
+    out = numeric()
+    for(i in 1:length(maior)){
+      if(i < length(maior)){
+        final = ( indexes[i+1, 'first'] - 1 )
+      } else{ # do the same for the last row
+        # considers there'd an event happenning the day after the last sample
+        final = nrow(dat)
+      }
+      aux = dat$z[(maior[i]+1):final]
+      out[i] = which.max(aux) # considers ONLY the first entry with maximum value
+    }
+    
+    
+    return(out)
+  }
   bitching[ , 'c'] = getC()
-
-#       d)diferenca entre o valore maximo em z depois do evento e a media de z nos 3 dias antes do evento
+  
+  #       d)diferenca entre o valore maximo em z depois do evento e a media de z nos 3 dias antes do evento
+  getD = function(){ # solve item d
+    #       d)diferenca entre o valore maximo em z depois do evento e a media de z nos 3 dias antes do evento
+    meanZ = apply(indexes, MARGIN = 1, FUN = function(vec){
+      if(vec[1] < 3){
+        return(NA) 
+      } else{
+        return(mean(dat$z[(vec[1]-3):(vec[1]-1)]) )
+      }
+    })
+    maxZ = sapply(indexes$last, FUN = function(x) which.max(dat$z[-c(1:x+1)]))
+    
+    out = ( maxZ - as.numeric(meanZ) )
+    return(out)
+  }
   bitching[ , 'd'] = getD()
-
-
+  
+  
   return(bitching)
 }
-
 
 res = Bitch(dat)
 res
