@@ -212,7 +212,7 @@ Bitch = function(dat, # expects something EXACTLY like the example data.frame
         return(mean(dat$z[(vec[1]-3):(vec[1]-1)]) )
       }
     })
-    maxZ = sapply(indexes$last, FUN = function(x) which.max(dat$z[-c(1:x+1)]))
+    maxZ = sapply(indexes$last, FUN = function(x) max(dat$z[-c(1:x)]))
     
     out = ( maxZ - as.numeric(meanZ) )
     return(out)

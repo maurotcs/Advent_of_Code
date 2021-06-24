@@ -141,14 +141,14 @@ Bitch = function(dat, # expects something EXACTLY like the example data.frame
 #       d)diferenca entre o valore maximo em z depois do evento e a media de z nos 3 dias antes do evento
   getD = function(){ # solve item d
     #       d)diferenca entre o valore maximo em z depois do evento e a media de z nos 3 dias antes do evento
-    meanZ = apply(indexes, MARGIN = 1, FUN = function(vec){
-      if(vec[1] < 3){
+    meanZ = sapply(indexes$first, FUN = function(x){
+      if(x < 3){
         return(NA) 
       } else{
-        return(mean(dat$z[(vec[1]-3):(vec[1]-1)]) )
+        return(mean(dat$z[(x-3):(x-1)]) )
       }
     })
-    maxZ = sapply(indexes$last, FUN = function(x) which.max(dat$z[-c(1:x+1)]))
+    maxZ = sapply(indexes$last, FUN = function(x) max(dat$z[-c(1:x)]) )
     
     out = ( maxZ - as.numeric(meanZ) )
     return(out)
