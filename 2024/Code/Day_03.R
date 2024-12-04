@@ -62,3 +62,37 @@ dos = gregexpr("do\\(\\)", text = input)
 # find the "don't()"s
 donts = gregexpr("don't\\(\\)", text = input)
 
+find_enabled_sections = function(d, dn, full.stop){
+  d = append(d, 1, 0)
+  ind.d = 1
+  start = end = c()
+  while(1){
+    ind.dn = which(dn > d[ind.d])[1]
+    if(is.na(ind.dn)){
+      end = append(end, full.stop)
+      start = append(start, d[ind.d])
+      break
+    } 
+    end = append(end, dn[ind.dn])
+    start = append(start, d[ind.d])
+    ind.d = which(d > dn[ind.dn])[1]
+    if(is.na(ind.d)){
+      break
+    }
+  }
+  
+  enabled = data.frame(start, end)
+  
+  return(enabled)
+}
+
+# extract the enabled sections
+enabled = find_enabled_sections(dos[[1]], donts[[1]], length(lista))
+# expand the data.frame
+enabled.vector = unlist(apply(enabled, MARGIN = 1, function(x) x[1]:x[2]))
+# find the enabled commands
+enabled.boolean = sapply(start, function(x) x %in% enabled.vector)
+# and extract them
+numb.enabled = numb[enabled.boolean]
+
+sum(sapply(numb.enabled, prod)) # 82045421
